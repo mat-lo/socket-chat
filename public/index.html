@@ -1,0 +1,192 @@
+<!doctype html>
+<html>
+  <head>
+    <title>d a i l y c h a t</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font: 18px Helvetica, Arial;
+        }
+        
+        form {
+            border-top:#000 2px dashed;
+            padding: 3px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+        
+        form input {
+            font: 18px Helvetica, Arial;
+            height:5%;
+            border: 0;
+            padding: 10px;
+            width: 90%;
+            margin-right: .5%;
+        }
+        
+        form button {
+            font-size: 21px;
+            width: 9%;
+            background: rgb(130, 224, 255);
+            border: none;
+            padding: 10px;
+        }
+        
+        img {
+          max-width: 800px;
+          max-height: 500px;
+        }
+        
+        #messages {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            margin-bottom:5%;
+        }
+        
+        #messages li {
+            padding: 5px 10px;
+        }
+        
+        #messages li:nth-child(odd) {
+            background: #eee;
+        }
+    </style>
+  </head>
+  <body>
+    <ul id="messages"></ul>
+    <form action="">
+      <input id="m" autocomplete="off" /><button>&#x2721;</button>
+    </form>
+    
+    
+    <script src="//cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="//code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+    
+    var chars = ["▲", "▼", "◀", "▶", "◢", "◣", "◥", "◤", "△", "▽", "◿", "◺", "◹", "◸", "▴", "▾", "◂", "▸", "▵", "▿", "◃", "▹", "◁", "▷", "◅", "▻", "◬", "⟁", "⧋", "⧊", "⊿", "∆", "∇", "◭", "◮", "⧩", "⧨", "⌔", "⟐", "◇", "◆", "◈", "⬖", "⬗", "⬘", "⬙", "⬠", "⬡", "⎔", "⋄", "◊", "⧫", "⬢", "⬣", "▰", "▪", "◼", "▮", "◾", "▗", "▖", "■", "∎", "▃", "▄", "▅", "▆", "▇", "█", "▌", "▐", "▍", "▎", "▉", "▊", "▋", "❘", "❙", "❚", "▀", "▘", "▝", "▙", "▚", "▛", "▜", "▟", "▞", "░", "▒", "▓", "▂", "▁", "▬", "▔", "▫", "▯", "▭", "▱", "◽", "□", "◻", "▢", "⊞", "⊡", "⊟", "⊠", "▣", "▤", "▥", "▦", "⬚", "▧", "▨", "▩", "⬓", "◧", "⬒", "◨", "◩", "◪", "⬔", "⬕", "❏", "❐", "❑", "❒", "⧈", "◰", "◱", "◳", "◲", "◫", "⧇", "⧅", "⧄", "⍁", "⍂", "⟡", "⧉", "⚬", "○", "⚪", "◌", "◍", "◎", "◯", "❍", "◉", "⦾", "⊙", "⦿", "⊜", "⊖", "⊘", "⊚", "⊛", "⊝", "●", "⚫", "⦁", "◐", "◑", "◒", "◓", "◔", "◕", "⦶", "⦸", "◵", "◴", "◶", "◷", "⊕", "⊗", "⦇", "⦈", "⦉", "⦊", "❨", "❩", "⸨", "⸩", "◖", "◗", "❪", "❫", "❮", "❯", "❬", "❭", "❰", "❱", "⊏", "⊐", "⊑", "⊒", "◘", "◙", "◚", "◛", "◜", "◝", "◞", "◟", "◠", "◡", "⋒", "⋓", "⋐", "⋑", "⥰", "╰", "╮", "╭", "╯", "⌒", "⥿", "⥾", "⥽", "⥼", "⥊", "⥋", "⥌", "⥍", "⥎", "⥐", "⥑", "⥏", "╳", "✕", "⤫", "⤬", "╱", "╲", "⧸", "⧹", "⌓", "◦", "❖", "✖", "✚", "✜", "⧓", "⧗", "⧑", "⧒", "⧖", "_", "⚊", "╴", "╼", "╾", "‐", "⁃", "‑", "‒", "-", "–", "⎯", "—", "―", "╶", "╺", "╸", "─", "━", "┄", "┅", "┈", "┉", "╌", "╍", "═", "≣", "≡", "☰", "☱", "☲", "☳", "☴", "☵", "☶", "☷", "╵", "╷", "╹", "╻", "│", "▕", "▏", "┃", "┆", "┇", "┊", "╎", "┋", "╿", "╽", "⌞", "⌟", "⌜", "⌝", "⌊", "⌋", "⌈", "⌉", "⌋", "┌", "┍", "┎", "┏", "┐", "┑", "┒", "┓", "└", "┕", "┖", "┗", "┘", "┙", "┚", "┛", "├", "┝", "┞", "┟", "┠", "┡", "┢", "┣", "┤", "┥", "┦", "┧", "┨", "┩", "┪", "┫", "┬", "┭", "┮", "┳", "┴", "┵", "┶", "┷", "┸", "┹", "┺", "┻", "┼", "┽", "┾", "┿", "╀", "╁", "╂", "╃", "╄", "╅", "╆", "╇", "╈", "╉", "╊", "╋", "╏", "║", "╔", "╒", "╓", "╕", "╖", "╗", "╚", "╘", "╙", "╛", "╜", "╝", "╞", "╟", "╠", "╡", "╢", "╣", "╤", "╥", "╦", "╧", "╨", "╩", "╪", "╫", "╬"];
+    var glitch = false;
+    
+    var apiKey = "AIzaSyC0dHyUUewLDMUA3eRbTmUDJYBhr1e1nsY";
+    var cseId = "007791985569897914514:vf-jaoadcx8";
+    
+    var socket = io();
+       $('form').submit(function(){
+        var msg = $('#m').val();
+        
+        //glitch
+        if (msg == 'glitch') {
+          glitch = !glitch;
+          var $li = $('<li>');
+          $li.css('color', '#CCC');
+          if (glitch) {
+            $li.text('glitch ON modafucka');
+          } else {
+            $li.text('glitch OFF modafucka');
+          }  
+          $('#messages').append($li);
+        } 
+        
+        //clear messages
+        else if(msg == 'c') {
+          $('#messages').empty();
+          var $li = $('<li>');
+          $li.css('color', '#CCC');
+          $li.text('a fresh start, dickhead');
+          $('#messages').append($li);
+        } 
+        
+        //image msg
+        else if(msg.indexOf("image") > -1) {
+            var words = msg.split(" ");
+            
+            //TO DO: add multiple words query
+            if(words.length > 1) {
+              
+                var imageQuery = ""; 
+                for(var i = 1; i< words.length; i++) {
+                  imageQuery += words[i]+" ";
+                } 
+                
+                imageQuery = imageQuery.substr(0, imageQuery.length-1); 
+                
+               var searchURL = "https://www.googleapis.com/customsearch/v1?key=" + apiKey + "&cx=" + cseId + "&q=" + imageQuery + "&searchType=image&fileType=jpg&alt=json";
+                $.get( searchURL, function( result ) {
+                  if (result.items.length > 0) {
+                    var items = result.items;
+                    var imageUrl = result.items[0].link;
+                    socket.emit('image message', imageUrl);
+                    $('#m').val('');
+                  }
+              });
+            }
+        }
+        
+        //send message
+        else {
+          socket.emit('chat message', msg);
+          $('#m').val('');
+        }
+        
+        
+        
+        return false;
+      });
+      
+      //when a socket "chat message" happens
+      socket.on('chat message', function(msg, color, user, sound){
+        
+        var snd = new Audio('mp3/' + sound);
+        snd.play();
+        
+        var $li = $('<li>');   
+        $li.css('color', color);  
+        
+        if (glitch) {
+          var r = parseInt(Math.random() * msg.length);
+          var vv ="" + randChars(1);
+          msg = [msg.slice(0, r), vv, msg.slice(r)].join('');
+          $li.text(user + ': ' + randChars(3) + msg + randChars(3));
+        } else {
+          $li.text(user + ': ' + msg);
+        }
+        
+        $('#messages').append($li);
+        $(window).scrollTop($(document).height());
+      });
+      
+      socket.on('image message', function(user, imageUrl){
+        var $img = $('<img/>');
+        var $li = $('<li>');
+        $img.attr("src", imageUrl);
+        $li.text(user + ": ");
+        $li.append($img);
+        $('#messages').append($li);
+        $(window).scrollTop($(document).height());
+      });
+
+      //when a user connects
+      socket.on('user connected', function(user, color){
+        var $li = $('<li>');
+        $li.css('color', color);
+        $li.text(randChars(10) + '░░░████████ W  ┣  ▙.  ❰  ◉  m  3  ' + user + ' ██████░░░' + randChars(10));
+        $('#messages').append($li);
+      });      
+      
+      function randChars(n) {
+        var gib = "";
+        for (var i=0; i<n; i++) {
+          var r = parseInt(Math.random() * chars.length);
+          gib += chars[r];
+        }
+        return gib;
+      }
+    </script>
+  </body>
+</html>
